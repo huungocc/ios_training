@@ -50,7 +50,8 @@ class ViewController: UIViewController {
     }
     
     @objc private func handlePedometerTapped() {
-        
+        let pedometerVC = PedometerViewController()
+        navigationController?.pushViewController(pedometerVC, animated: true)
     }
     
     @objc private func navigateToOnBoarding() {
