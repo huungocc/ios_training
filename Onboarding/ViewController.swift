@@ -55,6 +55,7 @@ class ViewController: UIViewController {
     }
     
     @objc private func navigateToOnBoarding() {
-        
+        let onBoardingVC = OnBoardingViewController()
+        navigationController?.pushViewController(onBoardingVC, animated: true)
     }
 }
