@@ -9,22 +9,21 @@ class TimeNowViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        view.addSubview(clockTitle)
         
-        clockTitle.translatesAutoresizingMaskIntoConstraints = false
-            clockTitle.textColor = .black
-            clockTitle.font = UIFont.systemFont(ofSize: 40, weight: .medium)
-            clockTitle.textAlignment = .center
-            
-        NSLayoutConstraint.activate([
-            clockTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            clockTitle.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            clockTitle.widthAnchor.constraint(equalToConstant: 200),
-            clockTitle.heightAnchor.constraint(equalToConstant: 50)
-        ])
+        setupLabel()
         
         getTimeNow()
         startTimer()
+    }
+    
+    func setupLabel() {
+        view.addSubview(clockTitle)
+        
+        clockTitle.translatesAutoresizingMaskIntoConstraints = false
+        clockTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        clockTitle.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        
+        clockTitle.font = .systemFont(ofSize: 72, weight: .bold)
     }
     
     override func viewWillDisappear(_ animated: Bool) {

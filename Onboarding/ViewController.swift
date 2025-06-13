@@ -1,6 +1,8 @@
 import UIKit
 
 class ViewController: UIViewController {
+    private let stackView = UIStackView(arrangedSubviews: [])
+    
     private let nowTimeButton = UIButton(type: .system)
     private let pedometerButton = UIButton(type: .system)
     private let onBoardingButton = UIButton(type: .system)
@@ -13,26 +15,25 @@ class ViewController: UIViewController {
         setupButton(pedometerButton, title: "Pedometer", action: #selector(handlePedometerTapped))
         setupButton(onBoardingButton, title: "On Boarding", action: #selector(navigateToOnBoarding))
         
-        view.addSubview(nowTimeButton)
-        view.addSubview(pedometerButton)
-        view.addSubview(onBoardingButton)
+        setupStackView()
+    }
+    
+    private func setupStackView() {
+        view.addSubview(stackView)
         
-        NSLayoutConstraint.activate([
-            onBoardingButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            onBoardingButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),
-            onBoardingButton.widthAnchor.constraint(equalToConstant: 200),
-            onBoardingButton.heightAnchor.constraint(equalToConstant: 50),
-            
-            pedometerButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            pedometerButton.bottomAnchor.constraint(equalTo: onBoardingButton.topAnchor, constant: -20),
-            pedometerButton.widthAnchor.constraint(equalTo: onBoardingButton.widthAnchor),
-            pedometerButton.heightAnchor.constraint(equalTo: onBoardingButton.heightAnchor),
-            
-            nowTimeButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            nowTimeButton.bottomAnchor.constraint(equalTo: pedometerButton.topAnchor, constant: -20),
-            nowTimeButton.widthAnchor.constraint(equalTo: onBoardingButton.widthAnchor),
-            nowTimeButton.heightAnchor.constraint(equalTo: onBoardingButton.heightAnchor),
-        ])
+        stackView.axis = .vertical
+        stackView.spacing = 16
+        stackView.distribution = .fillEqually
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 60).isActive = true
+        stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -60).isActive = true
+        
+        stackView.addArrangedSubview(nowTimeButton)
+        stackView.addArrangedSubview(pedometerButton)
+        stackView.addArrangedSubview(onBoardingButton)
     }
     
     private func setupButton(_ button: UIButton, title: String, action: Selector) {
@@ -41,6 +42,7 @@ class ViewController: UIViewController {
         button.backgroundColor = .black
         button.layer.cornerRadius = 22
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.heightAnchor.constraint(equalToConstant: 44).isActive = true
         button.addTarget(self, action: action, for: .touchUpInside)
     }
     
