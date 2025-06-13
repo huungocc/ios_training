@@ -23,7 +23,7 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
     }
 
     private func setupScrollView() {
-        scrollView.frame = view.bounds
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.isPagingEnabled = true
         scrollView.delegate = self
         scrollView.showsHorizontalScrollIndicator = false
@@ -31,94 +31,157 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
         scrollView.alwaysBounceVertical = false
         scrollView.alwaysBounceHorizontal = false
         scrollView.contentInsetAdjustmentBehavior = .never
+        
         view.addSubview(scrollView)
         
-        scrollView.contentSize = CGSize(width: view.frame.width * CGFloat(jsonArray.count), height: view.frame.height)
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
     }
     
     private func setupPages() {
         for i in 0..<jsonArray.count {
-            // Page view
-            let pageView = UIView(frame: CGRect(x: CGFloat(i) * view.frame.width,
-                                                y: 0,
-                                                width: view.frame.width,
-                                                height: view.frame.height))
+            let pageView = UIView()
+            pageView.translatesAutoresizingMaskIntoConstraints = false
             
             // BGColor
             if let hexColor = jsonArray[i]["bgColor"] {
                 pageView.backgroundColor = UIColor(hex: hexColor)
             }
             
-            // Image view
-            let imageWidth = view.frame.width / 1.5
-            let imageX = (view.frame.width - imageWidth) / 2
-            let imageView = UIImageView(frame: CGRect(x: imageX, y: 100, width: imageWidth, height: imageWidth))
-            imageView.contentMode = .scaleAspectFit
+            scrollView.addSubview(pageView)
             
+            NSLayoutConstraint.activate([
+                pageView.heightAnchor.constraint(equalTo: scrollView.heightAnchor),
+                pageView.widthAnchor.constraint(equalTo: view.widthAnchor),
+                pageView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: CGFloat(i) * view.frame.width),
+                pageView.topAnchor.constraint(equalTo: scrollView.topAnchor)
+            ])
+            
+            // Stack
+            let stack = UIStackView()
+            stack.translatesAutoresizingMaskIntoConstraints = false
+            stack.axis = .vertical
+            stack.distribution = .fill
+            stack.spacing = 50
+            stack.alignment = .center
+            
+            pageView.addSubview(stack)
+            
+            NSLayoutConstraint.activate([
+                stack.centerXAnchor.constraint(equalTo: pageView.centerXAnchor),
+                stack.safeAreaLayoutGuide.topAnchor.constraint(equalTo: pageView.safeAreaLayoutGuide.topAnchor, constant: 50),
+                stack.leadingAnchor.constraint(greaterThanOrEqualTo: pageView.leadingAnchor, constant: 40),
+                stack.trailingAnchor.constraint(lessThanOrEqualTo: pageView.trailingAnchor, constant: -40)
+            ])
+            
+            // Image view
+            let imageView = UIImageView()
+            imageView.contentMode = .scaleAspectFit
             if let imageName = jsonArray[i]["image"] {
                 imageView.image = UIImage(named: imageName)
             }
-            pageView.addSubview(imageView)
+            
+            imageView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                imageView.heightAnchor.constraint(equalToConstant: view.frame.width * 0.6),
+                imageView.widthAnchor.constraint(equalToConstant: view.frame.width * 0.6)
+            ])
+            
+            stack.addArrangedSubview(imageView)
             
             // Title
-            let title = UILabel(frame: CGRect(x: 20, y: view.frame.height/2, width: view.frame.width - 40, height: 80))
+            let title = UILabel()
             title.text = jsonArray[i]["bigTitle"]
             title.textColor = .black
-            title.font = UIFont.boldSystemFont(ofSize: 30)
+            title.font = UIFont.boldSystemFont(ofSize: 28)
             title.textAlignment = .center
             title.numberOfLines = 0
-            pageView.addSubview(title)
+            
+            stack.addArrangedSubview(title)
             
             // Sub title
-            let subtitle = UILabel(frame: CGRect(x: 20, y: view.frame.height/2 + 100, width: view.frame.width - 40, height: 80))
+            let subtitle = UILabel()
             subtitle.text = jsonArray[i]["smallTitle"]
             subtitle.textColor = .darkGray
-            subtitle.font = UIFont.systemFont(ofSize: 20)
+            subtitle.font = UIFont.systemFont(ofSize: 16)
             subtitle.textAlignment = .center
             subtitle.numberOfLines = 0
-            pageView.addSubview(subtitle)
             
-            // Page view
-            scrollView.addSubview(pageView)
+            stack.addArrangedSubview(subtitle)
         }
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        scrollView.contentSize = CGSize(width: view.frame.width * CGFloat(jsonArray.count), height: view.frame.height)
     }
     
     private func setupControls() {
         // Page control
         pageControl.numberOfPages = jsonArray.count
         pageControl.currentPage = 0
-        pageControl.frame = CGRect(x: 0, y: view.frame.height - 150, width: view.frame.width, height: 20)
+        pageControl.translatesAutoresizingMaskIntoConstraints = false
         pageControl.currentPageIndicatorTintColor = .black
         pageControl.pageIndicatorTintColor = .lightGray
         view.addSubview(pageControl)
         
+        NSLayoutConstraint.activate([
+            pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -100)
+        ])
+        
         // Skip
         skipButton.setTitle("Skip", for: .normal)
         skipButton.tintColor = .black
-        skipButton.frame = CGRect(x: 20, y: view.frame.height - 100, width: 100, height: 50)
+        skipButton.translatesAutoresizingMaskIntoConstraints = false
         skipButton.addTarget(self, action: #selector(skipTapped), for: .touchUpInside)
         view.addSubview(skipButton)
+        
+        NSLayoutConstraint.activate([
+            skipButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            skipButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            skipButton.widthAnchor.constraint(equalToConstant: 100),
+            skipButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
         
         // Next
         nextButton.setTitle("Next", for: .normal)
         nextButton.tintColor = .white
         nextButton.backgroundColor = .black
-        nextButton.layer.cornerRadius = 22
-        nextButton.frame = CGRect(x: view.frame.width - 120, y: view.frame.height - 100, width: 100, height: 50)
+        nextButton.layer.cornerRadius = 25
+        nextButton.translatesAutoresizingMaskIntoConstraints = false
         nextButton.addTarget(self, action: #selector(nextTapped), for: .touchUpInside)
         addShadow(to: nextButton)
         view.addSubview(nextButton)
+        
+        NSLayoutConstraint.activate([
+            nextButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            nextButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            nextButton.widthAnchor.constraint(equalToConstant: 100),
+            nextButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
         
         // Start
         startButton.setTitle("Start", for: .normal)
         startButton.tintColor = .white
         startButton.backgroundColor = .black
-        startButton.layer.cornerRadius = 22
-        startButton.frame = CGRect(x: (view.frame.width - 300)/2, y: view.frame.height - 100, width: 300, height: 50)
+        startButton.layer.cornerRadius = 25
+        startButton.translatesAutoresizingMaskIntoConstraints = false
         startButton.addTarget(self, action: #selector(startTapped), for: .touchUpInside)
         startButton.isHidden = true
         addShadow(to: startButton)
         view.addSubview(startButton)
+        
+        NSLayoutConstraint.activate([
+            startButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            startButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            startButton.widthAnchor.constraint(equalToConstant: 300),
+            startButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
     }
     
     @objc private func skipTapped() {
@@ -173,4 +236,3 @@ extension UIColor {
         self.init(red: r, green: g, blue: b, alpha: 1.0)
     }
 }
-

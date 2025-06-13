@@ -6,52 +6,92 @@ class PedometerViewController: UIViewController {
     private var count: Int = 0
     private var isCounting: Bool = false
     
-    private let timeLabel: UILabel = {
-        let timeLabel = UILabel()
-        timeLabel.text = "00:00:00"
-        timeLabel.textAlignment = .center
-        timeLabel.textColor = .white
-        timeLabel.clipsToBounds = true
-        timeLabel.layer.borderWidth = 2
-        timeLabel.layer.borderColor = UIColor.orange.cgColor
-        return timeLabel
-    }()
+    private var mainStackView = UIStackView()
+    private var buttonStackView = UIStackView()
     
-    private let startButton: UIButton = {
-        let startButton = UIButton()
-        startButton.setTitle("Start", for: .normal)
-        startButton.backgroundColor = .orange
-        startButton.setTitleColor(.black, for: .normal)
-        startButton.layer.cornerRadius = 10
-        startButton.clipsToBounds = true
-        return startButton
-    }()
-    
-    private let resetButton: UIButton = {
-        let resetButton = UIButton()
-        resetButton.setTitle("Reset", for: .normal)
-        resetButton.backgroundColor = .black
-        resetButton.setTitleColor(.white, for: .normal)
-        resetButton.layer.cornerRadius = 10
-        resetButton.clipsToBounds = true
-        resetButton.layer.borderWidth = 2
-        resetButton.layer.borderColor = UIColor.white.cgColor
-        return resetButton
-    }()
+    private var timeLabel = UILabel()
+    private var startButton = UIButton()
+    private var resetButton = UIButton()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         view.backgroundColor = .black
         
-        view.addSubview(timeLabel)
-        view.addSubview(startButton)
-        view.addSubview(resetButton)
+        setupMainStackView()
         
-        startButton.addTarget(self, action: #selector(onStartStopTapped), for: .touchUpInside)
+        setupLabel()
         
-        resetButton.addTarget(self, action: #selector(timerReset), for: .touchUpInside)
+        setupButtonStackView()
         
+    }
+    
+    func setupMainStackView() {
+        view.addSubview(mainStackView)
+        
+        mainStackView.axis = .vertical
+        mainStackView.spacing = 50
+        mainStackView.alignment = .center
+        mainStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            mainStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            mainStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+        
+        setupLabel()
+        setupButtonStackView()
+        
+        mainStackView.addArrangedSubview(timeLabel)
+        mainStackView.addArrangedSubview(buttonStackView)
+    }
+
+    
+    func setupButtonStackView() {
+        buttonStackView.axis = .horizontal
+        buttonStackView.spacing = 20
+        buttonStackView.distribution = .fillEqually
+        buttonStackView.translatesAutoresizingMaskIntoConstraints = false
+        buttonStackView.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        buttonStackView.widthAnchor.constraint(equalToConstant: view.frame.width - 60).isActive = true
+
+        setupButton(startButton, title: "Start", titleColor: .black, bgColor: .orange, action: #selector(onStartStopTapped))
+        setupButton(resetButton, title: "Reset", titleColor: .white, bgColor: .black, borderWidth: 2, borderColor: UIColor.white.cgColor, action: #selector(timerReset))
+        
+        buttonStackView.addArrangedSubview(startButton)
+        buttonStackView.addArrangedSubview(resetButton)
+    }
+
+    
+    func setupLabel() {
+        timeLabel.text = "00:00:00"
+        timeLabel.textAlignment = .center
+        timeLabel.textColor = .white
+        timeLabel.backgroundColor = .black
+        timeLabel.clipsToBounds = true
+        timeLabel.layer.borderWidth = 2
+        timeLabel.layer.cornerRadius = 100
+        timeLabel.layer.borderColor = UIColor.orange.cgColor
+        timeLabel.translatesAutoresizingMaskIntoConstraints = false
+        timeLabel.heightAnchor.constraint(equalToConstant: 200).isActive = true
+        timeLabel.widthAnchor.constraint(equalToConstant: 200).isActive = true
+    }
+
+    
+    func setupButton(_ button: UIButton, title: String, titleColor: UIColor, bgColor: UIColor, borderWidth: CGFloat? = nil, borderColor: CGColor? = nil, action: Selector) {
+        button.setTitle(title, for: .normal)
+        button.setTitleColor(titleColor, for: .normal)
+        button.backgroundColor = bgColor
+        button.layer.cornerRadius = 22
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        if let borderWidth = borderWidth {
+            button.layer.borderWidth = borderWidth
+        }
+        if let borderColor = borderColor {
+            button.layer.borderColor = borderColor
+        }
+        button.addTarget(self, action: action, for: .touchUpInside)
     }
     
     @objc func onStartStopTapped() {
@@ -89,40 +129,5 @@ class PedometerViewController: UIViewController {
     
     func makeTimeString(hours: Int, minutes: Int, seconds: Int) -> String {
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        // Kích thước màn hình
-        let width = view.frame.size.width
-        let labelSize: CGFloat = 150
-        let buttonWidth: CGFloat = (width - 100) / 2
-        let buttonHeight: CGFloat = 50
-
-        // timeLabel ở giữa trên
-        timeLabel.frame = CGRect(
-            x: (width - labelSize) / 2,
-            y: 150,
-            width: labelSize,
-            height: labelSize
-        )
-        timeLabel.layer.cornerRadius = labelSize / 2
-
-        // Start Button bên trái
-        startButton.frame = CGRect(
-            x: 40,
-            y: timeLabel.frame.maxY + 40,
-            width: buttonWidth,
-            height: buttonHeight
-        )
-
-        // Reset Button bên phải
-        resetButton.frame = CGRect(
-            x: startButton.frame.maxX + 20,
-            y: startButton.frame.minY,
-            width: buttonWidth,
-            height: buttonHeight
-        )
     }
 }
