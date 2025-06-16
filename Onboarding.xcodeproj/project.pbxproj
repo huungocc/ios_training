@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		622A5E88035463701B9BC379 /* libPods-Onboarding.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C9EDD2E8B1477917C26AA5DE /* libPods-Onboarding.a */; };
+		70116087AB746A7A17DEB9A5 /* Pods_Onboarding.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB5834DE6EBAC0B715D1D35D /* Pods_Onboarding.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		6A411D842DFAC1FC0092BC6F /* Onboarding.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Onboarding.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		84555D1C43E5F34D88DC868F /* Pods-Onboarding.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Onboarding.debug.xcconfig"; path = "Target Support Files/Pods-Onboarding/Pods-Onboarding.debug.xcconfig"; sourceTree = "<group>"; };
 		84FC7131689246F57CC96FB0 /* Pods-Onboarding.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Onboarding.release.xcconfig"; path = "Target Support Files/Pods-Onboarding/Pods-Onboarding.release.xcconfig"; sourceTree = "<group>"; };
-		C9EDD2E8B1477917C26AA5DE /* libPods-Onboarding.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Onboarding.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CB5834DE6EBAC0B715D1D35D /* Pods_Onboarding.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Onboarding.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -43,7 +43,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				622A5E88035463701B9BC379 /* libPods-Onboarding.a in Frameworks */,
+				70116087AB746A7A17DEB9A5 /* Pods_Onboarding.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 		1071CA601823FC3DE4B33DB2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C9EDD2E8B1477917C26AA5DE /* libPods-Onboarding.a */,
+				CB5834DE6EBAC0B715D1D35D /* Pods_Onboarding.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -64,7 +64,6 @@
 				84555D1C43E5F34D88DC868F /* Pods-Onboarding.debug.xcconfig */,
 				84FC7131689246F57CC96FB0 /* Pods-Onboarding.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -97,7 +96,7 @@
 				6A411D802DFAC1FC0092BC6F /* Sources */,
 				6A411D812DFAC1FC0092BC6F /* Frameworks */,
 				6A411D822DFAC1FC0092BC6F /* Resources */,
-				7BE44052E5FC1ABCA15D12BC /* [CP] Copy Pods Resources */,
+				C3DCC8A7549747B36D8D92A1 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -156,21 +155,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		7BE44052E5FC1ABCA15D12BC /* [CP] Copy Pods Resources */ = {
+		C3DCC8A7549747B36D8D92A1 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Onboarding/Pods-Onboarding-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Onboarding/Pods-Onboarding-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			name = "[CP] Copy Pods Resources";
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Onboarding/Pods-Onboarding-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Onboarding/Pods-Onboarding-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Onboarding/Pods-Onboarding-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Onboarding/Pods-Onboarding-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		EC49492BE078F6D29287D203 /* [CP] Check Pods Manifest.lock */ = {
@@ -301,7 +304,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -364,7 +367,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
