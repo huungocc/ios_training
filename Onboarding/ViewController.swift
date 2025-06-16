@@ -6,6 +6,7 @@ class ViewController: UIViewController {
     private let nowTimeButton = UIButton(type: .system)
     private let pedometerButton = UIButton(type: .system)
     private let onBoardingButton = UIButton(type: .system)
+    private let movieButton = UIButton(type: .system)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -14,6 +15,7 @@ class ViewController: UIViewController {
         setupButton(nowTimeButton, title: "Now Time", action: #selector(handleNowTimeTapped))
         setupButton(pedometerButton, title: "Pedometer", action: #selector(handlePedometerTapped))
         setupButton(onBoardingButton, title: "On Boarding", action: #selector(navigateToOnBoarding))
+        setupButton(movieButton, title: "Movie", action: #selector(navigateToMovie))
         
         setupStackView()
     }
@@ -34,6 +36,7 @@ class ViewController: UIViewController {
         stackView.addArrangedSubview(nowTimeButton)
         stackView.addArrangedSubview(pedometerButton)
         stackView.addArrangedSubview(onBoardingButton)
+        stackView.addArrangedSubview(movieButton)
     }
     
     private func setupButton(_ button: UIButton, title: String, action: Selector) {
@@ -59,5 +62,10 @@ class ViewController: UIViewController {
     @objc private func navigateToOnBoarding() {
         let onBoardingVC = OnBoardingViewController()
         navigationController?.pushViewController(onBoardingVC, animated: true)
+    }
+    
+    @objc private func navigateToMovie() {
+        let movieVC = MoviesViewController()
+        navigationController?.pushViewController(movieVC, animated: true)
     }
 }

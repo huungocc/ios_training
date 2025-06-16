@@ -2,7 +2,8 @@
 # platform :ios, '13.0'
 
 target 'Onboarding' do
-  pod 'Alamofire', '~> 5.8'
-  pod 'SDWebImage', '~> 5.18'
-  pod 'MBProgressHUD', '~> 1.2'
+  use_frameworks!
+  
+  pod 'Kingfisher'
+  pod 'ProgressHUD'
 end

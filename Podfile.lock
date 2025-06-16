@@ -1,26 +1,20 @@
 PODS:
-  - Alamofire (5.10.2)
-  - MBProgressHUD (1.2.0)
-  - SDWebImage (5.21.1):
-    - SDWebImage/Core (= 5.21.1)
-  - SDWebImage/Core (5.21.1)
+  - Kingfisher (8.3.2)
+  - ProgressHUD (14.1.1)
 
 DEPENDENCIES:
-  - Alamofire (~> 5.8)
-  - MBProgressHUD (~> 1.2)
-  - SDWebImage (~> 5.18)
+  - Kingfisher
+  - ProgressHUD
 
 SPEC REPOS:
   trunk:
-    - Alamofire
-    - MBProgressHUD
-    - SDWebImage
+    - Kingfisher
+    - ProgressHUD
 
 SPEC CHECKSUMS:
-  Alamofire: 7193b3b92c74a07f85569e1a6c4f4237291e7496
-  MBProgressHUD: 3ee5efcc380f6a79a7cc9b363dd669c5e1ae7406
-  SDWebImage: f29024626962457f3470184232766516dee8dfea
+  Kingfisher: 0621d0ac0c78fecb19f6dc5303bde2b52abaf2f5
+  ProgressHUD: abb9136ae23c85204236828562cb9a8ec98efb44
 
-PODFILE CHECKSUM: 7f9feff38bf3ac1bd49196f5d56703f39c3b346f
+PODFILE CHECKSUM: d20f0ca5ce44193214bbdeab5756b92c1d8fdf20
 
 COCOAPODS: 1.16.2
