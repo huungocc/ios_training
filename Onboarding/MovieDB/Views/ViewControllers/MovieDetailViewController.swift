@@ -3,13 +3,15 @@ import Kingfisher
 
 class MovieDetailViewController: UIViewController {
     
+    var movie: MovieModel?
+    
     private let scrollView = UIScrollView()
     private let contentView = UIView()
     
-    private lazy var ratingStackView = makeIconLabelStackView(imageName: "Star", label: ratingLabel)
-    private lazy var yearStackView = makeIconLabelStackView(imageName: "Calendar", label: yearLabel)
-    private lazy var runtimeStackView = makeIconLabelStackView(imageName: "Clock", label: runtimeLabel)
-    private lazy var genreStackView = makeIconLabelStackView(imageName: "Ticket", label: genreLabel)
+    private lazy var ratingStackView = CustomView.makeIconLabelStackView(imageName: "Star", label: ratingLabel)
+    private lazy var yearStackView = CustomView.makeIconLabelStackView(imageName: "Calendar", label: yearLabel)
+    private lazy var runtimeStackView = CustomView.makeIconLabelStackView(imageName: "Clock", label: runtimeLabel)
+    private lazy var genreStackView = CustomView.makeIconLabelStackView(imageName: "Ticket", label: genreLabel)
     
     private let infoStackView: UIStackView = {
         let stackView = UIStackView()
@@ -37,7 +39,7 @@ class MovieDetailViewController: UIViewController {
         return imageView
     }()
     
-    private let titleLabel = MovieDetailViewController.makeLabel(
+    private let titleLabel = CustomView.makeLabel(
         title: "Spider-Man: No Way Home",
         fontSize: 24,
         weight: .medium,
@@ -45,35 +47,35 @@ class MovieDetailViewController: UIViewController {
         lines: 2
     )
     
-    private let ratingLabel = MovieDetailViewController.makeLabel(
+    private let ratingLabel = CustomView.makeLabel(
         title: "4.5",
         fontSize: 16,
         weight: .regular,
         color: .systemYellow
     )
     
-    private let yearLabel = MovieDetailViewController.makeLabel(
+    private let yearLabel = CustomView.makeLabel(
         title: "2019",
         fontSize: 16,
         weight: .regular,
         color: .lightGray
     )
     
-    private let runtimeLabel = MovieDetailViewController.makeLabel(
+    private let runtimeLabel = CustomView.makeLabel(
         title: "145",
         fontSize: 16,
         weight: .regular,
         color: .lightGray
     )
     
-    private let genreLabel = MovieDetailViewController.makeLabel(
+    private let genreLabel = CustomView.makeLabel(
         title: "Action",
         fontSize: 16,
         weight: .regular,
         color: .lightGray
     )
     
-    private let overviewLabel = MovieDetailViewController.makeLabel(
+    private let overviewLabel = CustomView.makeLabel(
         title: "From DC Comics comes the Suicide Squad, an antihero team of incarcerated supervillains who act as deniable assets for the United States government, undertaking high-risk black ops missions in exchange for commuted prison sentences.",
         fontSize: 16,
         weight: .regular,
@@ -103,14 +105,14 @@ class MovieDetailViewController: UIViewController {
         contentView.translatesAutoresizingMaskIntoConstraints = false
         infoStackView.translatesAutoresizingMaskIntoConstraints = false
         
-        [yearStackView, makeVerticalSeparator(), runtimeStackView, makeVerticalSeparator(), genreStackView].forEach {
+        [yearStackView, CustomView.makeVerticalSeparator(), runtimeStackView, CustomView.makeVerticalSeparator(), genreStackView].forEach {
             infoStackView.addArrangedSubview($0)
         }
         
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         
-        let ratingCard = wrapInBlurCard(ratingStackView)
+        let ratingCard = CustomView.wrapInBlurCard(ratingStackView)
         
         [backDropImageView, posterImageView, titleLabel, ratingCard, infoStackView, overviewLabel].forEach {
             contentView.addSubview($0)
@@ -159,61 +161,4 @@ class MovieDetailViewController: UIViewController {
             overviewLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
         ])
     }
-    
-    private static func makeLabel(title: String, fontSize: CGFloat, weight: UIFont.Weight, color: UIColor, lines: Int = 1) -> UILabel {
-        let label = UILabel()
-        label.text = title
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
-        label.textColor = color
-        label.numberOfLines = lines
-        return label
-    }
-    
-    private func makeIconLabelStackView(imageName: String, label: UILabel) -> UIStackView {
-        let imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.image = UIImage(named: imageName)
-        imageView.contentMode = .scaleAspectFit
-        imageView.widthAnchor.constraint(equalToConstant: 16).isActive = true
-        imageView.heightAnchor.constraint(equalToConstant: 16).isActive = true
-
-        let stackView = UIStackView(arrangedSubviews: [imageView, label])
-        stackView.axis = .horizontal
-        stackView.spacing = 4
-        stackView.alignment = .center
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        return stackView
-    }
-    
-    private func makeVerticalSeparator() -> UIView {
-        let separator = UIView()
-        separator.translatesAutoresizingMaskIntoConstraints = false
-        separator.backgroundColor = .lightGray
-        NSLayoutConstraint.activate([
-            separator.widthAnchor.constraint(equalToConstant: 1),
-            separator.heightAnchor.constraint(equalToConstant: 16)
-        ])
-        return separator
-    }
-    
-    private func wrapInBlurCard(_ stackView: UIStackView) -> UIView {
-        let blurEffect = UIBlurEffect(style: .systemMaterialDark)
-        let blurView = UIVisualEffectView(effect: blurEffect)
-        blurView.translatesAutoresizingMaskIntoConstraints = false
-        blurView.layer.cornerRadius = 12
-        blurView.clipsToBounds = true
-
-        blurView.contentView.addSubview(stackView)
-
-        NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: blurView.contentView.topAnchor, constant: 6),
-            stackView.bottomAnchor.constraint(equalTo: blurView.contentView.bottomAnchor, constant: -6),
-            stackView.leadingAnchor.constraint(equalTo: blurView.contentView.leadingAnchor, constant: 10),
-            stackView.trailingAnchor.constraint(equalTo: blurView.contentView.trailingAnchor, constant: -10)
-        ])
-
-        return blurView
-    }
-
 }
