@@ -40,7 +40,6 @@ class MovieDetailViewController: UIViewController {
     }()
     
     private let titleLabel = CustomView.makeLabel(
-        title: "Spider-Man: No Way Home",
         fontSize: 24,
         weight: .medium,
         color: .white,
@@ -48,35 +47,30 @@ class MovieDetailViewController: UIViewController {
     )
     
     private let ratingLabel = CustomView.makeLabel(
-        title: "4.5",
         fontSize: 16,
         weight: .regular,
         color: .systemYellow
     )
     
     private let yearLabel = CustomView.makeLabel(
-        title: "2019",
         fontSize: 16,
         weight: .regular,
         color: .lightGray
     )
     
     private let runtimeLabel = CustomView.makeLabel(
-        title: "145",
         fontSize: 16,
         weight: .regular,
         color: .lightGray
     )
     
     private let genreLabel = CustomView.makeLabel(
-        title: "Action",
         fontSize: 16,
         weight: .regular,
         color: .lightGray
     )
     
     private let overviewLabel = CustomView.makeLabel(
-        title: "From DC Comics comes the Suicide Squad, an antihero team of incarcerated supervillains who act as deniable assets for the United States government, undertaking high-risk black ops missions in exchange for commuted prison sentences.",
         fontSize: 16,
         weight: .regular,
         color: .white,
@@ -93,6 +87,20 @@ class MovieDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        bindData()
+    }
+    
+    private func bindData() {
+        guard let movie = movie else { return }
+        
+        titleLabel.text = movie.title
+        ratingLabel.text = String(format: "%.1f", movie.voteAverage)
+        yearLabel.text = String(movie.releaseDate.prefix(4))
+        runtimeLabel.text = "\(movie.runtime ?? 0) minutes"
+        genreLabel.text = movie.genres?.first?.name ?? ""
+        overviewLabel.text = movie.overview
+        posterImageView.kf.setImage(with: URL(string: "https://image.tmdb.org/t/p/w500\(movie.posterPath)"))
+        backDropImageView.kf.setImage(with: URL(string: "https://image.tmdb.org/t/p/w500\(movie.backdropPath)"))
     }
     
     private func setupUI() {
@@ -136,11 +144,13 @@ class MovieDetailViewController: UIViewController {
             backDropImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             backDropImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             backDropImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            
+            backDropImageView.heightAnchor.constraint(equalToConstant: 210),
+            	
             //Poster
             posterImageView.centerYAnchor.constraint(equalTo: backDropImageView.bottomAnchor),
             posterImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            posterImageView.heightAnchor.constraint(equalToConstant: 150),
+            posterImageView.heightAnchor.constraint(equalToConstant: 120),
+            posterImageView.widthAnchor.constraint(equalToConstant: 100),
             
             // Title
             titleLabel.topAnchor.constraint(equalTo: backDropImageView.bottomAnchor, constant: 12),
