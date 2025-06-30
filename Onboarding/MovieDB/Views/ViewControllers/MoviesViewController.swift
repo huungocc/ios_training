@@ -2,6 +2,7 @@ import UIKit
 import Kingfisher
 
 class MoviesViewController: UIViewController {
+    private let headerView = CustomHeaderView()
     
     private var moviesViewModel = MoviesViewModel()
     private let tableView = UITableView()
@@ -25,10 +26,8 @@ class MoviesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(hex: "#242A32")
-        title = "Movies"
-        navigationController?.navigationBar.titleTextAttributes = [
-            .foregroundColor: UIColor.white
-        ]
+        
+        setupHeaderView()
         
         setupTableView()
         setupProgressHUD()
@@ -36,6 +35,36 @@ class MoviesViewController: UIViewController {
         Task {
             await loadMoviesData()
         }
+    }
+    
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        navigationController?.setNavigationBarHidden(true, animated: false)
+//    }
+//
+//    override func viewWillDisappear(_ animated: Bool) {
+//        super.viewWillDisappear(animated)
+//        navigationController?.setNavigationBarHidden(false, animated: false)
+//    }
+    
+    private func setupHeaderView() {
+        navigationController?.isNavigationBarHidden = true
+        
+        headerView.translatesAutoresizingMaskIntoConstraints = false
+        headerView.configure(title: "Movies", bgColor: .clear, colorTitle: .white, backButtonColor: .white)
+        
+        headerView.onBackTapped = { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+
+        view.addSubview(headerView)
+
+        NSLayoutConstraint.activate([
+            headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            headerView.heightAnchor.constraint(equalToConstant: 50)
+        ])
     }
     
     private func setupTableView() {
@@ -49,7 +78,7 @@ class MoviesViewController: UIViewController {
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.topAnchor.constraint(equalTo: headerView.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)

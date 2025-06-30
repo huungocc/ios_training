@@ -2,6 +2,9 @@ import UIKit
 import Kingfisher
 
 class MovieDetailViewController: UIViewController {
+    private let headerView = CustomHeaderView()
+    
+    private var isMark = false
     
     var movie: MovieModel?
     
@@ -77,17 +80,38 @@ class MovieDetailViewController: UIViewController {
         lines: 20
     )
     
-    private let bookmarkButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "bookmark"), for: .normal)
-        button.tintColor = .white
-        return button
-    }()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupHeaderView()
         setupUI()
         bindData()
+    }
+    
+    private func setupHeaderView() {
+        navigationController?.isNavigationBarHidden = true
+        
+        headerView.translatesAutoresizingMaskIntoConstraints = false
+        headerView.configure(title: "Details", bgColor: .clear, colorTitle: .white, backButtonColor: .white)
+        headerView.setSuffixButton(suffixIcon: UIImage(systemName: "bookmark"), suffixColor: .white, showSuffixButton: true)
+        
+        headerView.onBackTapped = { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+        
+        headerView.onSuffixTapped = { [weak self] in
+            guard let self = self else { return }
+            self.isMark.toggle()
+            self.headerView.setSuffixButton(suffixIcon: UIImage(systemName: isMark ? "bookmark.fill" : "bookmark"), suffixColor: .white, showSuffixButton: true)
+        }
+
+        view.addSubview(headerView)
+
+        NSLayoutConstraint.activate([
+            headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            headerView.heightAnchor.constraint(equalToConstant: 50)
+        ])
     }
     
     private func bindData() {
@@ -106,8 +130,6 @@ class MovieDetailViewController: UIViewController {
     private func setupUI() {
         title = "Detail"
         view.backgroundColor = UIColor(hex: "#242A32")
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: bookmarkButton)
         
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -128,7 +150,7 @@ class MovieDetailViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             // ScrollView
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.topAnchor.constraint(equalTo: headerView.bottomAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),

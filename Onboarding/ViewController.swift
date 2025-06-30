@@ -5,6 +5,7 @@ class ViewController: UIViewController {
     
     private let nowTimeButton = UIButton(type: .system)
     private let pedometerButton = UIButton(type: .system)
+    private let pomodoroButton = UIButton(type: .system)
     private let onBoardingButton = UIButton(type: .system)
     private let movieButton = UIButton(type: .system)
     
@@ -14,9 +15,9 @@ class ViewController: UIViewController {
         
         setupButton(nowTimeButton, title: "Now Time", action: #selector(handleNowTimeTapped))
         setupButton(pedometerButton, title: "Pedometer", action: #selector(handlePedometerTapped))
+        setupButton(pomodoroButton, title: "Pomodoro", action: #selector(handlePomodoroTapped))
         setupButton(onBoardingButton, title: "On Boarding", action: #selector(navigateToOnBoarding))
         setupButton(movieButton, title: "Movie", action: #selector(navigateToMovie))
-        
         setupStackView()
     }
     
@@ -35,6 +36,7 @@ class ViewController: UIViewController {
         
         stackView.addArrangedSubview(nowTimeButton)
         stackView.addArrangedSubview(pedometerButton)
+        stackView.addArrangedSubview(pomodoroButton)
         stackView.addArrangedSubview(onBoardingButton)
         stackView.addArrangedSubview(movieButton)
     }
@@ -57,6 +59,11 @@ class ViewController: UIViewController {
     @objc private func handlePedometerTapped() {
         let pedometerVC = PedometerViewController()
         navigationController?.pushViewController(pedometerVC, animated: true)
+    }
+    
+    @objc private func handlePomodoroTapped() {
+        let pomodoroVC = PomodoroViewController()
+        navigationController?.pushViewController(pomodoroVC, animated: true)
     }
     
     @objc private func navigateToOnBoarding() {

@@ -1,6 +1,7 @@
 import UIKit
 
 class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
+    private let headerView = CustomHeaderView()
     
     private let scrollView = UIScrollView()
     private let pageControl = UIPageControl()
@@ -14,12 +15,51 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
     private let skipButton = UIButton(type: .system)
     private let nextButton = UIButton(type: .system)
     private let startButton = UIButton(type: .system)
+    
+    private var backgroundColors: [UIColor] = []
+    private var pageViews: [UIView] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupBackgroundColors()
+        setupInitialBackground()
         setupScrollView()
+        setupHeaderView()
         setupPages()
         setupControls()
+    }
+    
+    private func setupBackgroundColors() {
+        backgroundColors = jsonArray.compactMap { item in
+            guard let hexColor = item["bgColor"] else { return nil }
+            return UIColor(hex: hexColor)
+        }
+    }
+    
+    private func setupInitialBackground() {
+        if !backgroundColors.isEmpty {
+            view.backgroundColor = backgroundColors[0]
+        }
+    }
+    
+    private func setupHeaderView() {
+        navigationController?.isNavigationBarHidden = true
+        
+        headerView.translatesAutoresizingMaskIntoConstraints = false
+        headerView.configure(title: "", bgColor: .clear, colorTitle: .black, backButtonColor: .black)
+        
+        headerView.onBackTapped = { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+
+        view.addSubview(headerView)
+
+        NSLayoutConstraint.activate([
+            headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            headerView.heightAnchor.constraint(equalToConstant: 50)
+        ])
     }
 
     private func setupScrollView() {
@@ -47,10 +87,14 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
             let pageView = UIView()
             pageView.translatesAutoresizingMaskIntoConstraints = false
             
-            // BGColor
-            if let hexColor = jsonArray[i]["bgColor"] {
-                pageView.backgroundColor = UIColor(hex: hexColor)
-            }
+            // Set background color to clear
+            pageView.backgroundColor = .clear
+            
+            // Thêm vào mảng để quản lý animation
+            pageViews.append(pageView)
+            
+            // Chỉ hiển thị page đầu tiên, các page khác ẩn đi
+            pageView.alpha = i == 0 ? 1.0 : 0.0
             
             scrollView.addSubview(pageView)
             
@@ -61,37 +105,53 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
                 pageView.topAnchor.constraint(equalTo: scrollView.topAnchor)
             ])
             
-            // Stack
-            let stack = UIStackView()
-            stack.translatesAutoresizingMaskIntoConstraints = false
-            stack.axis = .vertical
-            stack.distribution = .fill
-            stack.spacing = 50
-            stack.alignment = .center
-            
-            pageView.addSubview(stack)
-            
-            NSLayoutConstraint.activate([
-                stack.centerXAnchor.constraint(equalTo: pageView.centerXAnchor),
-                stack.safeAreaLayoutGuide.topAnchor.constraint(equalTo: pageView.safeAreaLayoutGuide.topAnchor, constant: 50),
-                stack.leadingAnchor.constraint(greaterThanOrEqualTo: pageView.leadingAnchor, constant: 40),
-                stack.trailingAnchor.constraint(lessThanOrEqualTo: pageView.trailingAnchor, constant: -40)
-            ])
-            
             // Image view
             let imageView = UIImageView()
             imageView.contentMode = .scaleAspectFit
             if let imageName = jsonArray[i]["image"] {
                 imageView.image = UIImage(named: imageName)
             }
-            
             imageView.translatesAutoresizingMaskIntoConstraints = false
+            pageView.addSubview(imageView)
+            
             NSLayoutConstraint.activate([
+                imageView.centerXAnchor.constraint(equalTo: pageView.centerXAnchor),
+                imageView.safeAreaLayoutGuide.topAnchor.constraint(equalTo: pageView.safeAreaLayoutGuide.topAnchor, constant: 70),
                 imageView.heightAnchor.constraint(equalToConstant: view.frame.width * 0.6),
                 imageView.widthAnchor.constraint(equalToConstant: view.frame.width * 0.6)
             ])
             
-            stack.addArrangedSubview(imageView)
+            // Page Control cho từng page (chỉ tạo một lần cho page đầu tiên)
+            if i == 0 {
+                pageControl.translatesAutoresizingMaskIntoConstraints = false
+                pageControl.numberOfPages = jsonArray.count
+                pageControl.currentPage = 0
+                pageControl.currentPageIndicatorTintColor = .black
+                pageControl.pageIndicatorTintColor = .lightGray
+                view.addSubview(pageControl)
+                
+                NSLayoutConstraint.activate([
+                    pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                    pageControl.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 70)
+                ])
+            }
+            
+            // Text stack
+            let textStack = UIStackView()
+            textStack.translatesAutoresizingMaskIntoConstraints = false
+            textStack.axis = .vertical
+            textStack.distribution = .fill
+            textStack.spacing = 20
+            textStack.alignment = .center
+            
+            pageView.addSubview(textStack)
+            
+            NSLayoutConstraint.activate([
+                textStack.centerXAnchor.constraint(equalTo: pageView.centerXAnchor),
+                textStack.topAnchor.constraint(equalTo: pageControl.bottomAnchor, constant: 20),
+                textStack.leadingAnchor.constraint(greaterThanOrEqualTo: pageView.leadingAnchor, constant: 40),
+                textStack.trailingAnchor.constraint(lessThanOrEqualTo: pageView.trailingAnchor, constant: -40)
+            ])
             
             // Title
             let title = UILabel()
@@ -101,7 +161,7 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
             title.textAlignment = .center
             title.numberOfLines = 0
             
-            stack.addArrangedSubview(title)
+            textStack.addArrangedSubview(title)
             
             // Sub title
             let subtitle = UILabel()
@@ -111,7 +171,7 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
             subtitle.textAlignment = .center
             subtitle.numberOfLines = 0
             
-            stack.addArrangedSubview(subtitle)
+            textStack.addArrangedSubview(subtitle)
         }
     }
     
@@ -121,19 +181,6 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
     }
     
     private func setupControls() {
-        // Page control
-        pageControl.numberOfPages = jsonArray.count
-        pageControl.currentPage = 0
-        pageControl.translatesAutoresizingMaskIntoConstraints = false
-        pageControl.currentPageIndicatorTintColor = .black
-        pageControl.pageIndicatorTintColor = .lightGray
-        view.addSubview(pageControl)
-        
-        NSLayoutConstraint.activate([
-            pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -100)
-        ])
-        
         // Skip
         skipButton.setTitle("Skip", for: .normal)
         skipButton.tintColor = .black
@@ -203,13 +250,78 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let pageIndex = Int(round(scrollView.contentOffset.x / view.frame.width))
-        pageControl.currentPage = pageIndex
+        let currentOffset = scrollView.contentOffset.x
+        let pageWidth = view.frame.width
         
-        let isLastPage = pageIndex == jsonArray.count - 1
+        // Tính toán page hiện tại và tỷ lệ scroll
+        let currentPageFloat = currentOffset / pageWidth
+        let currentPageIndex = Int(floor(currentPageFloat))
+        let nextPageIndex = Int(ceil(currentPageFloat))
+        let progress = currentPageFloat - floor(currentPageFloat)
+        
+        // Cập nhật page control
+        let roundedPageIndex = Int(round(currentPageFloat))
+        if roundedPageIndex != pageControl.currentPage && roundedPageIndex < jsonArray.count {
+            pageControl.currentPage = roundedPageIndex
+        }
+        
+        // Thực hiện fade theo thời gian thực
+        updatePagesAlpha(currentIndex: currentPageIndex, nextIndex: nextPageIndex, progress: Float(progress))
+        updateBackgroundColor(currentIndex: currentPageIndex, nextIndex: nextPageIndex, progress: Float(progress))
+        
+        // Cập nhật button visibility
+        let isLastPage = roundedPageIndex == jsonArray.count - 1
         nextButton.isHidden = isLastPage
         skipButton.isHidden = isLastPage
         startButton.isHidden = !isLastPage
+    }
+    
+    private func updatePagesAlpha(currentIndex: Int, nextIndex: Int, progress: Float) {
+        guard currentIndex >= 0 && currentIndex < pageViews.count else { return }
+        
+        // Reset tất cả alpha về 0
+        for pageView in pageViews {
+            pageView.alpha = 0.0
+        }
+        
+        // Set alpha cho page hiện tại
+        pageViews[currentIndex].alpha = CGFloat(1.0 - progress)
+        
+        // Set alpha cho page tiếp theo (nếu có)
+        if nextIndex < pageViews.count && nextIndex != currentIndex {
+            pageViews[nextIndex].alpha = CGFloat(progress)
+        }
+    }
+    
+    private func updateBackgroundColor(currentIndex: Int, nextIndex: Int, progress: Float) {
+        guard currentIndex >= 0 && currentIndex < backgroundColors.count else { return }
+        
+        let currentColor = backgroundColors[currentIndex]
+        
+        if nextIndex < backgroundColors.count && nextIndex != currentIndex {
+            let nextColor = backgroundColors[nextIndex]
+            
+            // Interpolate giữa 2 màu
+            let interpolatedColor = interpolateColor(from: currentColor, to: nextColor, progress: CGFloat(progress))
+            view.backgroundColor = interpolatedColor
+        } else {
+            view.backgroundColor = currentColor
+        }
+    }
+    
+    private func interpolateColor(from: UIColor, to: UIColor, progress: CGFloat) -> UIColor {
+        var fromRed: CGFloat = 0, fromGreen: CGFloat = 0, fromBlue: CGFloat = 0, fromAlpha: CGFloat = 0
+        var toRed: CGFloat = 0, toGreen: CGFloat = 0, toBlue: CGFloat = 0, toAlpha: CGFloat = 0
+        
+        from.getRed(&fromRed, green: &fromGreen, blue: &fromBlue, alpha: &fromAlpha)
+        to.getRed(&toRed, green: &toGreen, blue: &toBlue, alpha: &toAlpha)
+        
+        let red = fromRed + (toRed - fromRed) * progress
+        let green = fromGreen + (toGreen - fromGreen) * progress
+        let blue = fromBlue + (toBlue - fromBlue) * progress
+        let alpha = fromAlpha + (toAlpha - fromAlpha) * progress
+        
+        return UIColor(red: red, green: green, blue: blue, alpha: alpha)
     }
     
     func addShadow(to button: UIButton) {

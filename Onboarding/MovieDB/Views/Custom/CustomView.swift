@@ -58,5 +58,20 @@ class CustomView {
 
         return blurView
     }
-
+    
+    static func setupButton(_ button: UIButton, title: String, titleColor: UIColor, bgColor: UIColor, borderWidth: CGFloat? = nil, borderColor: CGColor? = nil, action: Selector, target: Any?) {
+        button.setTitle(title, for: .normal)
+        button.setTitleColor(titleColor, for: .normal)
+        button.backgroundColor = bgColor
+        button.layer.cornerRadius = 22
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        if let borderWidth = borderWidth {
+            button.layer.borderWidth = borderWidth
+        }
+        if let borderColor = borderColor {
+            button.layer.borderColor = borderColor
+        }
+        button.addTarget(target, action: action, for: .touchUpInside)
+    }
 }
