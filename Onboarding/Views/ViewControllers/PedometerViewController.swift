@@ -1,35 +1,32 @@
 import UIKit
+import Combine
 
 class PedometerViewController: UIViewController {
     private let headerView = CustomHeaderView()
-    
-    private var startTime: Date?
-    private var displayLink: CADisplayLink?
-
-    private var count: Int = 0
-    private var isCounting: Bool = false
-    private var timeBeforeStop: TimeInterval = 0
-    
     private let mainStackView = UIStackView()
     private let buttonStackView = UIStackView()
-    
     private let timeLabel = UILabel()
     private let startButton = UIButton()
     private let stepButton = UIButton()
     private let resetButton = UIButton()
-    
     private let pickerView = UIPickerView()
     private var pickerViewHeightConstraint: NSLayoutConstraint!
-    var timeSteps: [String] = []
-
+    
+    private let viewModel = PedometerViewModel()
+    private var cancellables = Set<AnyCancellable>()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setupUI()
+        bindViewModel()
+    }
+    
+    private func setupUI() {
         view.backgroundColor = .black
         
         setupHeaderView()
         setupMainStackView()
-        setupButtonStackView()
     }
     
     private func setupHeaderView() {
@@ -41,9 +38,9 @@ class PedometerViewController: UIViewController {
         headerView.onBackTapped = { [weak self] in
             self?.navigationController?.popViewController(animated: true)
         }
-
+        
         view.addSubview(headerView)
-
+        
         NSLayoutConstraint.activate([
             headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -52,7 +49,7 @@ class PedometerViewController: UIViewController {
         ])
     }
     
-    func setupMainStackView() {
+    private func setupMainStackView() {
         view.addSubview(mainStackView)
         
         mainStackView.axis = .vertical
@@ -65,32 +62,50 @@ class PedometerViewController: UIViewController {
             mainStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
         
+        setupTimeLabel()
+        setupButtons()
+        
         mainStackView.addArrangedSubview(timeLabel)
         mainStackView.addArrangedSubview(pickerView)
         mainStackView.addArrangedSubview(buttonStackView)
         
-        setupLabel()
         setupPickerView()
-        setupButtonStackView()
     }
-
-    func setupPickerView() {
-        pickerView.translatesAutoresizingMaskIntoConstraints = false
+    
+    private func setupTimeLabel() {
+        timeLabel.text = "00:00:00"
+        timeLabel.font = .systemFont(ofSize: 30, weight: .bold)
+        timeLabel.textAlignment = .center
+        timeLabel.textColor = .white
+        timeLabel.backgroundColor = .black
+        timeLabel.clipsToBounds = true
+        timeLabel.layer.borderWidth = 2
+        timeLabel.layer.cornerRadius = 100
+        timeLabel.layer.borderColor = UIColor.orange.cgColor
+        timeLabel.translatesAutoresizingMaskIntoConstraints = false
         
+        NSLayoutConstraint.activate([
+            timeLabel.heightAnchor.constraint(equalToConstant: 200),
+            timeLabel.widthAnchor.constraint(equalToConstant: 200)
+        ])
+    }
+    
+    private func setupPickerView() {
+        pickerView.translatesAutoresizingMaskIntoConstraints = false
         pickerView.dataSource = self
         pickerView.delegate = self
         pickerView.backgroundColor = .clear
         
-        // Initially hidden
         pickerViewHeightConstraint = pickerView.heightAnchor.constraint(equalToConstant: 0)
         pickerViewHeightConstraint.isActive = true
         
         NSLayoutConstraint.activate([
-            pickerView.widthAnchor.constraint(equalTo: mainStackView.widthAnchor)
+            pickerView.leadingAnchor.constraint(equalTo: mainStackView.leadingAnchor),
+            pickerView.trailingAnchor.constraint(equalTo: mainStackView.trailingAnchor)
         ])
     }
     
-    func setupButtonStackView() {
+    private func setupButtons() {
         buttonStackView.axis = .horizontal
         buttonStackView.spacing = 20
         buttonStackView.distribution = .fillEqually
@@ -101,15 +116,18 @@ class PedometerViewController: UIViewController {
             buttonStackView.widthAnchor.constraint(equalToConstant: view.frame.width - 60)
         ])
         
+        // Step Button
         setupButton(stepButton, title: "Step", titleColor: .white, bgColor: .black, borderWidth: 2, borderColor: UIColor.white.cgColor)
         stepButton.isHidden = true
-        stepButton.addTarget(self, action: #selector(onStepTapped), for: .touchUpInside)
+        stepButton.addTarget(self, action: #selector(stepButtonTapped), for: .touchUpInside)
         
+        // Start Button
         setupButton(startButton, title: "Start", titleColor: .black, bgColor: .orange)
-        startButton.addTarget(self, action: #selector(onStartStopTapped), for: .touchUpInside)
+        startButton.addTarget(self, action: #selector(startStopButtonTapped), for: .touchUpInside)
         
+        // Reset Button
         setupButton(resetButton, title: "Reset", titleColor: .white, bgColor: .black, borderWidth: 2, borderColor: UIColor.white.cgColor)
-        resetButton.addTarget(self, action: #selector(timerReset), for: .touchUpInside)
+        resetButton.addTarget(self, action: #selector(resetButtonTapped), for: .touchUpInside)
         
         buttonStackView.addArrangedSubview(stepButton)
         buttonStackView.addArrangedSubview(startButton)
@@ -126,138 +144,87 @@ class PedometerViewController: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     }
     
-    func setupLabel() {
-        timeLabel.text = "00:00:00"
-        timeLabel.font = .systemFont(ofSize: 30, weight: .bold)
-        timeLabel.textAlignment = .center
-        timeLabel.textColor = .white
-        timeLabel.backgroundColor = .black
-        timeLabel.clipsToBounds = true
-        timeLabel.layer.borderWidth = 2
-        timeLabel.layer.cornerRadius = 100
-        timeLabel.layer.borderColor = UIColor.orange.cgColor
-        timeLabel.translatesAutoresizingMaskIntoConstraints = false
-        timeLabel.heightAnchor.constraint(equalToConstant: 200).isActive = true
-        timeLabel.widthAnchor.constraint(equalToConstant: 200).isActive = true
-    }
-    
-    @objc func onStartStopTapped() {
-        if isCounting {
-            if let startTime = startTime {
-                timeBeforeStop += Date().timeIntervalSince(startTime)
+    private func bindViewModel() {
+        viewModel.$timerState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] timerState in
+                self?.updateUI(with: timerState)
             }
-
-            isCounting = false
-            displayLink?.invalidate()
-            displayLink = nil
-            startButton.setTitle("Start", for: .normal)
-            stepButton.isHidden = !isCounting
-        } else {
-            isCounting = true
-            startTime = Date()
-            displayLink = CADisplayLink(target: self, selector: #selector(updateDisplayTime))
-            displayLink?.add(to: .current, forMode: .common)
-            startButton.setTitle("Stop", for: .normal)
-            stepButton.isHidden = !isCounting
-        }
+            .store(in: &cancellables)
+        
+        viewModel.$stepRecords
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] steps in
+                if (steps.count <= 0) {
+                    self?.animatePickerVisibility(false)
+                } else {
+                    self?.animatePickerVisibility(true)
+                }
+                
+                self?.pickerView.reloadAllComponents()
+                self?.scrollToLastStep()
+            }
+            .store(in: &cancellables)
     }
     
-    @objc func updateDisplayTime() {
-        guard let startTime = startTime else { return }
-
-        let elapsed = Date().timeIntervalSince(startTime) + timeBeforeStop
-
-        let minutes = Int(elapsed) / 60
-        let seconds = Int(elapsed) % 60
-        let centiseconds = Int((elapsed - floor(elapsed)) * 100)
-
-        let timeString = String(format: "%02d:%02d:%02d", minutes, seconds, centiseconds)
-        timeLabel.text = timeString
+    private func updateUI(with timerState: TimerState) {
+        timeLabel.text = timerState.currentTime
+        startButton.setTitle(viewModel.startButtonTitle, for: .normal)
+        stepButton.isHidden = !viewModel.shouldShowStepButton
     }
     
-    @objc func timerReset() {
-        isCounting = false
-        displayLink?.invalidate()
-        displayLink = nil
-        startTime = nil
-        timeBeforeStop = 0
-        timeLabel.text = "00:00:00"
-        startButton.setTitle("Start", for: .normal)
-        
-        timeSteps.removeAll()
-        pickerView.reloadAllComponents()
-        
-        stepButton.isHidden = !isCounting
-        
+    private func animatePickerVisibility(_ isVisible: Bool) {
         UIView.animate(withDuration: 0.3) {
-            self.pickerViewHeightConstraint.constant = 0
+            self.pickerViewHeightConstraint.constant = isVisible ? 150 : 0
             self.view.layoutIfNeeded()
         }
     }
     
-    @objc func onStepTapped() {
-        guard let currentTime = timeLabel.text, isCounting else { return }
-        
-        if pickerViewHeightConstraint.constant == 0 {
-            UIView.animate(withDuration: 0.3) {
-                self.pickerViewHeightConstraint.constant = 150
-                self.view.layoutIfNeeded()
-            }
-        }
-        
-        timeSteps.append(currentTime)
-        pickerView.reloadAllComponents()
-        
-        let lastRow = timeSteps.count - 1
+    private func scrollToLastStep() {
+        let lastRow = viewModel.stepRecords.count - 1
         if lastRow >= 0 {
             pickerView.selectRow(lastRow, inComponent: 0, animated: true)
         }
     }
     
-    func secondsToHoursMinuteSeconds(_ seconds: Int) -> (Int, Int, Int) {
-        let hours = seconds / 3600
-        let minutes = (seconds % 3600) / 60
-        let secondsPart = (seconds % 3600) % 60
-        return (hours, minutes, secondsPart)
+    @objc private func startStopButtonTapped() {
+        viewModel.startStopTimer()
     }
     
-    func makeTimeString(hours: Int, minutes: Int, seconds: Int) -> String {
-        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    @objc private func stepButtonTapped() {
+        viewModel.recordStep()
+    }
+    
+    @objc private func resetButtonTapped() {
+        viewModel.resetTimer()
     }
 }
 
 extension PedometerViewController: UIPickerViewDataSource, UIPickerViewDelegate {
-    // Number of components (columns)
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
     
-    // Number of rows in component
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return timeSteps.count
+        return viewModel.stepRecords.count
     }
     
-    // Title for each row
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return "Step \(row + 1): \(timeSteps[row])"
+        let stepRecord = viewModel.stepRecords[row]
+        return "Step \(stepRecord.stepNumber): \(stepRecord.timeStamp)"
     }
     
-    // Custom view for each row to match dark theme
     func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
         let label = UILabel()
-        label.text = "Step \(row + 1): \(timeSteps[row])"
+        let stepRecord = viewModel.stepRecords[row]
+        label.text = "Step \(stepRecord.stepNumber): \(stepRecord.timeStamp)"
         label.font = .systemFont(ofSize: 18, weight: .medium)
-        label.textColor = .white // White text for dark theme
+        label.textColor = .white
         label.textAlignment = .center
         return label
     }
     
-    // Row height
     func pickerView(_ pickerView: UIPickerView, rowHeightForComponent component: Int) -> CGFloat {
         return 40
     }
-    
-//    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-//        
-//    }
 }

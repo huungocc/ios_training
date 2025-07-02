@@ -22,7 +22,6 @@ struct MovieModel: Decodable {
     }
 }
 
-// Response list (dùng lại model trên)
 struct MovieListResponse: Decodable {
     let results: [MovieModel]
 }

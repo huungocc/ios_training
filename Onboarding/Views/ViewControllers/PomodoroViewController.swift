@@ -1,24 +1,35 @@
 import UIKit
+import Combine
 
 class PomodoroViewController: UIViewController {
     private let headerView = CustomHeaderView()
     private let progressView = ProgressCircleView()
-    
     private let startButton = UIButton()
     private let resetButton = UIButton()
-    
     private let mainStackView = UIStackView()
     private let buttonStackView = UIStackView()
     
-    private var isRunning = false
-    private var isPaused = false
+    private let viewModel = PomodoroViewModel(duration: 60)
+    private var cancellables = Set<AnyCancellable>()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
+
+        setupUI()
+        bindViewModel()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if viewModel.pomodoroState.isRunning {
+            viewModel.handleAction(.pause)
+        }
+    }
+    
+    private func setupUI() {
         setupHeaderView()
         setupMainStackView()
-        setupProgressCallback()
     }
     
     private func setupHeaderView() {
@@ -63,6 +74,16 @@ class PomodoroViewController: UIViewController {
         mainStackView.addArrangedSubview(buttonStackView)
     }
     
+    private func setupProgressView() {
+        progressView.duration = 60
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            progressView.widthAnchor.constraint(equalToConstant: 250),
+            progressView.heightAnchor.constraint(equalToConstant: 250)
+        ])
+    }
+    
     private func setupButtonStackView() {
         buttonStackView.axis = .horizontal
         buttonStackView.spacing = 20
@@ -75,29 +96,13 @@ class PomodoroViewController: UIViewController {
         ])
         
         setupButton(startButton, title: "Start", titleColor: .black, bgColor: .orange)
-        startButton.addTarget(self, action: #selector(onStartStopTapped), for: .touchUpInside)
+        startButton.addTarget(self, action: #selector(startStopButtonTapped), for: .touchUpInside)
         
         setupButton(resetButton, title: "Reset", titleColor: .white, bgColor: .black, borderWidth: 2, borderColor: UIColor.white.cgColor)
-        resetButton.addTarget(self, action: #selector(onResetTapped), for: .touchUpInside)
+        resetButton.addTarget(self, action: #selector(resetButtonTapped), for: .touchUpInside)
         
         buttonStackView.addArrangedSubview(startButton)
         buttonStackView.addArrangedSubview(resetButton)
-    }
-
-    private func setupProgressView() {
-        progressView.duration = 60
-        progressView.translatesAutoresizingMaskIntoConstraints = false
-
-        NSLayoutConstraint.activate([
-            progressView.widthAnchor.constraint(equalToConstant: 250),
-            progressView.heightAnchor.constraint(equalToConstant: 250)
-        ])
-    }
-    
-    private func setupProgressCallback() {
-        progressView.onTimerComplete = { [weak self] in
-            self?.onTimerComplete()
-        }
     }
     
     private func setupButton(_ button: UIButton, title: String, titleColor: UIColor, bgColor: UIColor, borderWidth: CGFloat = 0, borderColor: CGColor = UIColor.clear.cgColor) {
@@ -111,61 +116,61 @@ class PomodoroViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
     }
     
-    @objc private func onStartStopTapped() {
-        if !isRunning {
-            if isPaused {
-                progressView.resumeProgress()
-                isPaused = false
-            } else {
-                progressView.startProgress()
+    private func bindViewModel() {
+        viewModel.$pomodoroState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                guard let self = self else { return }
+                self.updateUI(with: state)
             }
-            isRunning = true
-            updateButtonStates()
-        } else {
-            progressView.pauseProgress()
-            isRunning = false
-            isPaused = true
-            updateButtonStates()
-        }
-    }
-    
-    @objc private func onResetTapped() {
-        progressView.resetProgress()
-        isRunning = false
-        isPaused = false
-        updateButtonStates()
-    }
-    
-    private func updateButtonStates() {
-        if isRunning {
-            startButton.setTitle("Pause", for: .normal)
-        } else if isPaused {
-            startButton.setTitle("Resume", for: .normal)
-        } else {
-            startButton.setTitle("Start", for: .normal)
-        }
-    }
-    
-    private func onTimerComplete() {
-        isRunning = false
-        isPaused = false
-        updateButtonStates()
+            .store(in: &cancellables)
         
-        // Show completion alert
-        let alert = UIAlertController(title: "Pomodoro Complete!", message: "Time for a break!", preferredStyle: .alert)
+        viewModel.$shouldShowCompletionAlert
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] shouldShow in
+                guard let self = self else { return }
+                if shouldShow {
+                    self.showCompletionAlert()
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func updateUI(with state: PomodoroState) {
+        progressView.timeText = state.formattedTime
+        progressView.progress = state.progress
+        
+        startButton.setTitle(viewModel.startButtonTitle, for: .normal)
+    }
+    
+    private func showCompletionAlert() {
+        let alert = UIAlertController(
+            title: "Pomodoro Complete!",
+            message: "Time for a break!",
+            preferredStyle: .alert
+        )
+        
         alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
-            self?.progressView.resetProgress()
+            self?.viewModel.dismissCompletionAlert()
+            self?.viewModel.handleAction(.reset)
         })
-        present(alert, animated: true)
         
-        let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
-        impactFeedback.impactOccurred()
+        present(alert, animated: true)
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        if isRunning {
-            progressView.pauseProgress()
+    @objc private func startStopButtonTapped() {
+        let currentState = viewModel.pomodoroState
+        
+        if currentState.isRunning {
+            viewModel.handleAction(.pause)
+        } else if currentState.isPaused {
+            viewModel.handleAction(.resume)
+        } else {
+            viewModel.handleAction(.start)
         }
+    }
+    
+    @objc private func resetButtonTapped() {
+        viewModel.handleAction(.reset)
     }
 }

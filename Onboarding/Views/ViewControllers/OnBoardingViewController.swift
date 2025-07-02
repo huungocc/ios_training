@@ -87,13 +87,10 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
             let pageView = UIView()
             pageView.translatesAutoresizingMaskIntoConstraints = false
             
-            // Set background color to clear
             pageView.backgroundColor = .clear
             
-            // Thêm vào mảng để quản lý animation
             pageViews.append(pageView)
             
-            // Chỉ hiển thị page đầu tiên, các page khác ẩn đi
             pageView.alpha = i == 0 ? 1.0 : 0.0
             
             scrollView.addSubview(pageView)
@@ -121,7 +118,6 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
                 imageView.widthAnchor.constraint(equalToConstant: view.frame.width * 0.6)
             ])
             
-            // Page Control cho từng page (chỉ tạo một lần cho page đầu tiên)
             if i == 0 {
                 pageControl.translatesAutoresizingMaskIntoConstraints = false
                 pageControl.numberOfPages = jsonArray.count
@@ -301,7 +297,7 @@ class OnBoardingViewController: UIViewController, UIScrollViewDelegate {
         if nextIndex < backgroundColors.count && nextIndex != currentIndex {
             let nextColor = backgroundColors[nextIndex]
             
-            // Interpolate giữa 2 màu
+            // Pha giữa 2 màu
             let interpolatedColor = interpolateColor(from: currentColor, to: nextColor, progress: CGFloat(progress))
             view.backgroundColor = interpolatedColor
         } else {

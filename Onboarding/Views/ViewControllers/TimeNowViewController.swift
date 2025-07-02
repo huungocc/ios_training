@@ -85,7 +85,6 @@ class TimeNowViewController: UIViewController {
         pickerView.dataSource = self
         pickerView.delegate = self
         
-        // Customization cho picker
         pickerView.backgroundColor = .clear
         
         pickerViewHeightConstraint = pickerView.heightAnchor.constraint(equalToConstant: 0)
@@ -132,7 +131,7 @@ class TimeNowViewController: UIViewController {
     
     func getTimeNow() {
         currentTime = Date()
-        self.updateTimeLabel()
+        updateTimeLabel()
     }
     
     @objc func updateTime() {
@@ -146,7 +145,6 @@ class TimeNowViewController: UIViewController {
         let currentTimeString = dateFormatter.string(from: currentTime)
         timeSteps.append(currentTimeString)
         
-        // Reload picker data
         pickerView.reloadAllComponents()
         
         if pickerViewHeightConstraint.constant == 0 {
@@ -156,7 +154,6 @@ class TimeNowViewController: UIViewController {
             }
         }
         
-        // Scroll to latest item
         let lastRow = timeSteps.count - 1
         if lastRow >= 0 {
             pickerView.selectRow(lastRow, inComponent: 0, animated: true)
@@ -191,17 +188,14 @@ class TimeNowViewController: UIViewController {
 }
 
 extension TimeNowViewController: UIPickerViewDataSource, UIPickerViewDelegate {
-    // Number of components (columns)
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
     
-    // Number of rows in component
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return timeSteps.count
     }
     
-    // Title for each row
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         return "Step \(row + 1): \(timeSteps[row])"
     }
@@ -209,8 +203,4 @@ extension TimeNowViewController: UIPickerViewDataSource, UIPickerViewDelegate {
     func pickerView(_ pickerView: UIPickerView, rowHeightForComponent component: Int) -> CGFloat {
         return 40
     }
-    
-//    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-//
-//    }
 }

@@ -37,16 +37,6 @@ class MoviesViewController: UIViewController {
         }
     }
     
-//    override func viewWillAppear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//        navigationController?.setNavigationBarHidden(true, animated: false)
-//    }
-//
-//    override func viewWillDisappear(_ animated: Bool) {
-//        super.viewWillDisappear(animated)
-//        navigationController?.setNavigationBarHidden(false, animated: false)
-//    }
-    
     private func setupHeaderView() {
         navigationController?.isNavigationBarHidden = true
         
@@ -141,7 +131,7 @@ extension MoviesViewController: UITableViewDataSource, UITableViewDelegate {
             year: movie.releaseDate,
             runtime: "\(movie.runtime ?? 0) minutes",
             posterURL: "https://image.tmdb.org/t/p/w500\(movie.posterPath)"
-        )
+        )	
         return cell
     }
     

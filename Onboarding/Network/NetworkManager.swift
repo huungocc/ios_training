@@ -17,41 +17,36 @@ class NetworkManager {
 
     func request<T: Decodable>(
         endpoint: String,
-        queryItems: [URLQueryItem] = [],
-        completion: @escaping (Result<T, NetworkError>) -> Void
-    ) {
+        queryItems: [URLQueryItem] = []
+    ) async throws -> T {
         var components = URLComponents(string: baseURL + endpoint)
         var finalQueryItems = queryItems
         finalQueryItems.append(URLQueryItem(name: "api_key", value: apiKey))
         components?.queryItems = finalQueryItems
 
         guard let url = components?.url else {
-            completion(.failure(.invalidURL))
-            return
+            throw NetworkError.invalidURL
         }
 
         print("Requesting: \(url.absoluteString)")
 
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            if let _ = error {
-                completion(.failure(.serverError("Failed to call API")))
-                return
-            }
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
 
-            guard let data = data else {
-                completion(.failure(.invalidResponse))
-                return
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                throw NetworkError.invalidResponse
             }
 
             do {
                 let decoded = try JSONDecoder().decode(T.self, from: data)
-                completion(.success(decoded))
+                return decoded
             } catch {
-                print("Error: \(error)")
-                completion(.failure(.decodingError))
+                print("Decoding error: \(error)")
+                throw NetworkError.decodingError
             }
-        }
 
-        task.resume()
+        } catch {
+            throw NetworkError.serverError(error.localizedDescription)
+        }
     }
 }
