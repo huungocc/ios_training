@@ -49,7 +49,7 @@ class ViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         button.heightAnchor.constraint(equalToConstant: 44).isActive = true
         button.addTarget(self, action: action, for: .touchUpInside)
-    }
+    }	
     
     @objc private func handleNowTimeTapped() {
         let timeNowVC = TimeNowViewController()
